@@ -24,6 +24,7 @@ namespace IDE.ui
 			/*Platform,
 			Platform_Windows,
 			Platform_Linux,*/
+			Metadata,
             Dependencies,
 			Beef_Global,
 			Platform,
@@ -93,6 +94,7 @@ namespace IDE.ui
             var item = AddCategoryItem(globalItem, "Project");
 			if (!project.IsDebugSession)
             	item.Focused = true;
+			AddCategoryItem(globalItem, "Metadata");
 			AddCategoryItem(globalItem, "Dependencies");
 			AddCategoryItem(globalItem, "Beef");
 			AddCategoryItem(globalItem, "Platform");
@@ -148,6 +150,7 @@ namespace IDE.ui
 			{
 			case .General,
 				 .Project,
+				 .Metadata,
 				 .Dependencies,
 				 .Beef_Global:
 				return .None;
@@ -406,6 +409,10 @@ namespace IDE.ui
 				mProject.SetupDefault(generalOptions);
 				targetDict[mCurPropertiesTargets[0]] = generalOptions;
 				UpdateFromTarget(targetDict);
+			case .Metadata:
+				var metadataOptions = scope Project.MetadataOptions();
+				targetDict[mCurPropertiesTargets[0]] = metadataOptions;
+				UpdateFromTarget(targetDict);
 			case .Beef_Global:
 				DeleteDistinctBuildOptions();
 				DistinctBuildOptions defaultTypeOptions = scope:: .();
@@ -533,6 +540,8 @@ namespace IDE.ui
 					mCurPropertiesTargets[0] = mProject.mGeneralOptions;
 				else if (categoryType == .Beef_Global)
 					mCurPropertiesTargets[0] = mProject.mBeefGlobalOptions;
+				else if (categoryType == .Metadata)
+					mCurPropertiesTargets[0] = mProject.mMetadataOptions;
 			}
 
             ConfigDataGroup targetedConfigData;
@@ -583,6 +592,8 @@ namespace IDE.ui
 
                 if (categoryType == CategoryType.Project)
                     PopulateGeneralOptions();
+				else if (categoryType == CategoryType.Metadata)
+					PopulateMetadataOptions();
                 else if (categoryType == CategoryType.Dependencies)
                     PopulateDependencyOptions();
 				else if (categoryType == .Platform)
@@ -627,6 +638,13 @@ namespace IDE.ui
 				});
 			AddPropertiesItem(root, "Project Name Aliases", "mAliases");
         }
+
+		void PopulateMetadataOptions()
+		{
+			var root = (DarkListViewItem)mPropPage.mPropertiesListView.GetRoot();
+			AddPropertiesItem(root, "Description", "mDescription");
+			AddPropertiesItem(root, "Website", "mWebsite");
+		}
 
 		void PopulateWindowsOptions()
 		{

@@ -993,6 +993,26 @@ namespace IDE
 			}			
 		}
 
+		public class MetadataOptions
+		{
+			[Reflect]
+			public String mDescription = new String() ~ delete _;
+			[Reflect]
+			public String mWebsite = new String() ~ delete _;
+
+			public void Deserialize(StructuredData data)
+			{
+				data.GetString("Description", mDescription);
+				data.GetString("Website", mWebsite);
+			}
+
+			public void Serialize(StructuredData data)
+			{
+				data.ConditionalAdd("Description", mDescription);
+				data.ConditionalAdd("Website", mWebsite);
+			}
+		}
+
 		public class LinuxOptions
 		{
 			[Reflect]
@@ -1280,6 +1300,8 @@ namespace IDE
 
 		public List<String> mCurBfOutputFileNames ~ DeleteContainerAndItems!(_);
 
+		public MetadataOptions mMetadataOptions = new MetadataOptions() ~ delete _;
+
         public String ProjectFileName
         {
             get
@@ -1496,6 +1518,12 @@ namespace IDE
 				WriteStrings("Aliases", mGeneralOptions.mAliases);
 				WriteStrings("ProcessorMacros", mBeefGlobalOptions.mPreprocessorMacros);
 				WriteDistinctOptions(mBeefGlobalOptions.mDistinctBuildOptions);
+				data.RemoveIfEmpty();
+			}
+
+			using (data.CreateObject("Metadata"))
+			{
+				mMetadataOptions.Serialize(data);
 				data.RemoveIfEmpty();
 			}
 
@@ -1827,6 +1855,11 @@ namespace IDE
 				default:
 					mGeneralOptions.mTargetType = data.GetEnum<TargetType>("TargetType", GetDefaultTargetType());
 				}
+			}
+
+			using (data.Open("Metadata"))
+			{
+				mMetadataOptions.Deserialize(data);
 			}
 
 			using (data.Open("Platform"))
